@@ -54,3 +54,4 @@ description: Material-UI development guidelines
 - The project uses inline styles extensively in [timeboxTimer.jsx](mdc:start_template/src/timeboxTimer.jsx)
 - Material-UI is installed but not heavily used yet
 - Consider migrating inline styles to MUI components for consistency
+- Must use Material-UI for any icons
