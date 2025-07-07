@@ -33,4 +33,3 @@ This is a React + Vite project with Material-UI components. The main structure i
 - Inline styles are used throughout for styling
 - Clean, minimal UI with focus on usability
 - No external state management (uses React state)
-- Must use Material-UI for any icons
