@@ -4,24 +4,39 @@ function TimeboxTimer() {
   const [task, setTask] = useState('');
   const [duration, setDuration] = useState(45);
   const [isRunning, setIsRunning] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
   const intervalRef = useRef(null);
 
   useEffect(() => {
-    if (isRunning && timeLeft > 0) {
+    if (isRunning && !isPaused && timeLeft > 0) {
       intervalRef.current = setInterval(() => {
         setTimeLeft((prev) => prev - 1);
       }, 1000);
     } else if (timeLeft === 0) {
       clearInterval(intervalRef.current);
       setIsRunning(false);
+      setIsPaused(false);
     }
     return () => clearInterval(intervalRef.current);
-  }, [isRunning, timeLeft]);
+  }, [isRunning, isPaused, timeLeft]);
 
   const handleStart = () => {
     setTimeLeft(duration * 60);
     setIsRunning(true);
+    setIsPaused(false);
+  };
+
+  const handlePause = () => {
+    setIsPaused(!isPaused);
+  };
+
+  const handleReset = () => {
+    clearInterval(intervalRef.current);
+    setIsRunning(false);
+    setIsPaused(false);
+    setTimeLeft(0);
+    setTask('');
   };
 
   const formatTime = (seconds) => {
@@ -139,27 +154,44 @@ function TimeboxTimer() {
       )}
 
       {isRunning && (
-        <button
-          style={{
-            width: '100%',
-            background: '#9ca3af',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 8,
-            padding: '12px 0',
-            fontSize: 17,
-            fontWeight: 600,
-            cursor: 'not-allowed',
-            marginTop: 4,
-          }}
-          disabled
-        >
-          ⏰ Timer Running...
-        </button>
+        <div style={{ display: 'flex', gap: '12px', marginTop: 4 }}>
+          <button
+            style={{
+              flex: 1,
+              background: isPaused ? '#16a34a' : '#dc2626',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              padding: '12px 0',
+              fontSize: 17,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+            onClick={handlePause}
+          >
+            {isPaused ? '▶ Resume' : '⏸ Pause'}
+          </button>
+          <button
+            style={{
+              flex: 1,
+              background: '#6b7280',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              padding: '12px 0',
+              fontSize: 17,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+            onClick={handleReset}
+          >
+            🔄 Reset
+          </button>
+        </div>
       )}
 
       <div style={{ textAlign: 'center', color: '#6b7280', fontSize: 15, marginTop: isRunning ? 8 : 0, minHeight: 24 }}>
-        {isRunning ? 'Stay focused on your current task!' : ''}
+        {isRunning ? (isPaused ? 'Timer paused - click Resume to continue' : 'Stay focused on your current task!') : ''}
       </div>
     </div>
   );
