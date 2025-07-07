@@ -42,6 +42,30 @@ This repository is designed for testing and comparing various agentic coding too
   - Nested rules automatically attach when files in their directory are referenced
   - Supports metadata and content in MDC format
 
+## Test Scenario
+
+### 🛑 Task 1: Add Pause and Reset Controls
+
+"Add a Pause and Reset button to the <TimeboxTimer /> component. The Pause button should stop the countdown, and the Reset button should clear the timer and allow the user to enter a new task."
+
+### 🔔 Task 2: Play a Sound and Show an Alert When Time Is Up
+
+"When the countdown reaches zero, play a short chime sound (local file) and show a modal or toast that says 'Timebox complete!' using mui components."
+
+### 💾 Task 3: Store Timeboxes in LocalStorage
+
+"Save completed timeboxes (task name, duration, and completion timestamp) to localStorage. Also, display a history of the last 5 timeboxes below the timer."
+
+### 🎨 Task 4: Animate the Timer Countdown Circle
+
+"Add a circular progress bar around the timer that visually counts down using SVG or canvas. Animate the circle to decrease smoothly in sync with the timer."
+
+### 🌙 Task 5: Add Dark Mode Support
+
+"Enable dark mode using Tailwind's built-in dark mode class and update mui theme config to support both light and dark styles. Add a toggle button at the top of the page."
+
+
+
 ## Project Structure
 
 ```
