@@ -30,6 +30,82 @@ function TimeboxTimer() {
     return `${m}:${s}`;
   };
 
+  // Calculate progress for circular progress bar
+  const totalSeconds = duration * 60;
+  const progress = isRunning ? (timeLeft / totalSeconds) * 100 : 100;
+  
+  // SVG circle properties
+  const size = 200;
+  const strokeWidth = 8;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const strokeDasharray = `${circumference} ${circumference}`;
+  const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+  const CircularProgress = () => (
+    <div style={{
+      position: 'relative',
+      width: size,
+      height: size,
+      margin: '0 auto',
+    }}>
+      <svg
+        width={size}
+        height={size}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          transform: 'rotate(-90deg)',
+        }}
+      >
+        {/* Background circle */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="#e5e7eb"
+          strokeWidth={strokeWidth}
+          fill="none"
+        />
+        {/* Progress circle */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={progress > 20 ? "#3b82f6" : "#ef4444"}
+          strokeWidth={strokeWidth}
+          fill="none"
+          strokeDasharray={strokeDasharray}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          style={{
+            transition: 'stroke-dashoffset 0.5s ease-in-out, stroke 0.3s ease-in-out',
+          }}
+        />
+      </svg>
+      {/* Timer content in center */}
+      <div style={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        textAlign: 'center',
+        width: '140px',
+      }}>
+        <div style={{ color: '#6b7280', fontSize: 14, marginBottom: 4 }}>
+          {task}
+        </div>
+        <div style={{ fontSize: 32, fontWeight: 700, letterSpacing: 1 }}>
+          {formatTime(timeLeft)}
+        </div>
+        <div style={{ color: '#6b7280', fontSize: 12, marginTop: 2 }}>
+          remaining
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div style={{
       background: '#fff',
@@ -123,18 +199,14 @@ function TimeboxTimer() {
 
       {isRunning && (
         <div style={{
-          background: '#f3f4f6',
+          background: '#f8fafc',
           borderRadius: 12,
-          padding: '1.5rem 0.5rem',
+          padding: '2rem 1rem',
           marginBottom: 18,
           textAlign: 'center',
           border: '1px solid #e5e7eb',
         }}>
-          <div style={{ color: '#6b7280', fontSize: 17, marginBottom: 2 }}>
-            Current Task: <span style={{ fontWeight: 600, color: '#111827' }}>{task}</span>
-          </div>
-          <div style={{ fontSize: 44, fontWeight: 700, letterSpacing: 1, margin: '8px 0' }}>{formatTime(timeLeft)}</div>
-          <div style={{ color: '#6b7280', fontSize: 15 }}>Time remaining</div>
+          <CircularProgress />
         </div>
       )}
 
