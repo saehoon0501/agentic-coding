@@ -6,6 +6,7 @@ function TimeboxTimer({ isDarkMode = false }) {
   const [task, setTask] = useState('');
   const [duration, setDuration] = useState(45);
   const [isRunning, setIsRunning] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [history, setHistory] = useState([]);
@@ -59,24 +60,38 @@ function TimeboxTimer({ isDarkMode = false }) {
   }, [history]);
 
   useEffect(() => {
-    if (isRunning && timeLeft > 0) {
+    if (isRunning && !isPaused && timeLeft > 0) {
       intervalRef.current = setInterval(() => {
         setTimeLeft((prev) => prev - 1);
       }, 1000);
     } else if (timeLeft === 0 && isRunning) {
       clearInterval(intervalRef.current);
       setIsRunning(false);
+      setIsPaused(false);
       playChime();
       setShowCompletionModal(true);
       // Save completed timebox to history when timer reaches zero
       saveCompletedTimebox(task, duration);
     }
     return () => clearInterval(intervalRef.current);
-  }, [isRunning, timeLeft, task, duration, saveCompletedTimebox]);
+  }, [isRunning, isPaused, timeLeft, task, duration, saveCompletedTimebox]);
 
   const handleStart = () => {
     setTimeLeft(duration * 60);
     setIsRunning(true);
+    setIsPaused(false);
+  };
+
+  const handlePause = () => {
+    setIsPaused(!isPaused);
+  };
+
+  const handleReset = () => {
+    clearInterval(intervalRef.current);
+    setIsRunning(false);
+    setIsPaused(false);
+    setTimeLeft(0);
+    setTask('');
   };
 
   const handleCloseModal = () => {
@@ -310,28 +325,46 @@ function TimeboxTimer({ isDarkMode = false }) {
           )}
 
           {isRunning && (
-            <button
-              style={{
-                width: '100%',
-                background: colors.buttonBgDisabled,
-                color: '#fff',
-                border: 'none',
-                borderRadius: 8,
-                padding: '12px 0',
-                fontSize: 17,
-                fontWeight: 600,
-                cursor: 'not-allowed',
-                marginTop: 4,
-                transition: 'all 0.2s ease-in-out',
-              }}
-              disabled
-            >
-              ⏰ Timer Running...
-            </button>
+            <div style={{ display: 'flex', gap: '12px', marginTop: 4 }}>
+              <button
+                style={{
+                  flex: 1,
+                  background: isPaused ? '#16a34a' : '#dc2626',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 8,
+                  padding: '12px 0',
+                  fontSize: 17,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease-in-out',
+                }}
+                onClick={handlePause}
+              >
+                {isPaused ? '▶ Resume' : '⏸ Pause'}
+              </button>
+              <button
+                style={{
+                  flex: 1,
+                  background: '#6b7280',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 8,
+                  padding: '12px 0',
+                  fontSize: 17,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease-in-out',
+                }}
+                onClick={handleReset}
+              >
+                🔄 Reset
+              </button>
+            </div>
           )}
 
           <div style={{ textAlign: 'center', color: colors.textSecondary, fontSize: 15, marginTop: isRunning ? 8 : 0, minHeight: 24 }}>
-            {isRunning ? 'Stay focused on your current task!' : ''}
+            {isRunning ? (isPaused ? 'Timer paused - click Resume to continue' : 'Stay focused on your current task!') : ''}
           </div>
         </div>
 
