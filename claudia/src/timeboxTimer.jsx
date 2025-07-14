@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Modal, Box, Typography, Button } from '@mui/material';
 
 function TimeboxTimer() {
   const [task, setTask] = useState('');
   const [duration, setDuration] = useState(45);
   const [isRunning, setIsRunning] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
   const intervalRef = useRef(null);
 
   useEffect(() => {
@@ -15,6 +17,9 @@ function TimeboxTimer() {
     } else if (timeLeft === 0) {
       clearInterval(intervalRef.current);
       setIsRunning(false);
+      // 치임 소리 재생 및 모달 표시
+      playChimeSound();
+      setShowCompletionModal(true);
     }
     return () => clearInterval(intervalRef.current);
   }, [isRunning, timeLeft]);
@@ -28,6 +33,47 @@ function TimeboxTimer() {
     const m = Math.floor(seconds / 60).toString().padStart(2, '0');
     const s = (seconds % 60).toString().padStart(2, '0');
     return `${m}:${s}`;
+  };
+
+  const playChimeSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      // 치임 소리 패턴 (800Hz -> 600Hz -> 800Hz)
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2);
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    } catch (error) {
+      console.log('Audio playback not supported or failed:', error);
+    }
+  };
+
+  const handleModalClose = () => {
+    setShowCompletionModal(false);
+  };
+
+  const modalStyle = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    borderRadius: 2,
+    boxShadow: 24,
+    p: 4,
+    textAlign: 'center',
   };
 
   return (
@@ -161,6 +207,36 @@ function TimeboxTimer() {
       <div style={{ textAlign: 'center', color: '#6b7280', fontSize: 15, marginTop: isRunning ? 8 : 0, minHeight: 24 }}>
         {isRunning ? 'Stay focused on your current task!' : ''}
       </div>
+
+      {/* 타이머 완료 모달 */}
+      <Modal
+        open={showCompletionModal}
+        onClose={handleModalClose}
+        aria-labelledby="timebox-complete-modal"
+        aria-describedby="timebox-completion-message"
+      >
+        <Box sx={modalStyle}>
+          <Typography id="timebox-complete-modal" variant="h4" component="h2" gutterBottom>
+            🎉 Timebox Complete!
+          </Typography>
+          <Typography id="timebox-completion-message" sx={{ mt: 2, mb: 3 }}>
+            Great job! You've completed your timebox for:
+          </Typography>
+          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: 'primary.main' }}>
+            {task}
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
+            Duration: {duration} minutes
+          </Typography>
+          <Button 
+            variant="contained" 
+            onClick={handleModalClose}
+            sx={{ mt: 2 }}
+          >
+            Got it!
+          </Button>
+        </Box>
+      </Modal>
     </div>
   );
 }
