@@ -47,27 +47,30 @@ function TimeboxTimer() {
   };
 
   return (
-    <div style={{
-      background: '#fff',
-      borderRadius: '18px',
-      boxShadow: '0 4px 24px rgba(0,0,0,0.10)',
-      border: '1.5px solid #e5e7eb',
-      padding: '2.5rem 2.5rem 2rem 2.5rem',
-      minWidth: 370,
-      maxWidth: 400,
-      width: 370,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'stretch',
-      gap: '1.5rem',
-      margin: '0 auto',
-    }}>
+    <div
+      className="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
+      style={{
+        background: '#fff',
+        borderRadius: '18px',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.10)',
+        border: '1.5px solid #e5e7eb',
+        padding: '2.5rem 2.5rem 2rem 2.5rem',
+        minWidth: 370,
+        maxWidth: 400,
+        width: 370,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'stretch',
+        gap: '1.5rem',
+        margin: '0 auto',
+      }}
+    >
       <div style={{ textAlign: 'center', marginBottom: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 2 }}>
           <Timer sx={{ fontSize: 28 }} />
           <span style={{ fontSize: 28, fontWeight: 700 }}>Timebox Timer</span>
         </div>
-        <div style={{ color: '#6b7280', fontSize: 16, marginTop: 2 }}>Focus on one task at a time</div>
+        <div className="dark:text-gray-400" style={{ color: '#6b7280', fontSize: 16, marginTop: 2 }}>Focus on one task at a time</div>
       </div>
       
       <div>
@@ -116,6 +119,7 @@ function TimeboxTimer() {
         />
         {!isRunning && (
           <button
+            className="dark:bg-gray-700"
             style={{
               width: '100%',
               background: '#111827',
@@ -146,11 +150,11 @@ function TimeboxTimer() {
           textAlign: 'center',
           border: '1px solid #e5e7eb',
         }}>
-          <div style={{ color: '#6b7280', fontSize: 17, marginBottom: 2 }}>
-            Current Task: <span style={{ fontWeight: 600, color: '#111827' }}>{task}</span>
-          </div>
+        <div className="dark:text-gray-400" style={{ color: '#6b7280', fontSize: 17, marginBottom: 2 }}>
+          Current Task: <span style={{ fontWeight: 600, color: '#111827' }}>{task}</span>
+        </div>
           <div style={{ fontSize: 44, fontWeight: 700, letterSpacing: 1, margin: '8px 0' }}>{formatTime(timeLeft)}</div>
-          <div style={{ color: '#6b7280', fontSize: 15 }}>Time remaining</div>
+          <div className="dark:text-gray-400" style={{ color: '#6b7280', fontSize: 15 }}>Time remaining</div>
         </div>
       )}
 
@@ -191,7 +195,7 @@ function TimeboxTimer() {
         </div>
       )}
 
-      <div style={{ textAlign: 'center', color: '#6b7280', fontSize: 15, marginTop: isRunning ? 8 : 0, minHeight: 24 }}>
+      <div className="dark:text-gray-400" style={{ textAlign: 'center', color: '#6b7280', fontSize: 15, marginTop: isRunning ? 8 : 0, minHeight: 24 }}>
         {isRunning ? 'Stay focused on your current task!' : ''}
       </div>
     </div>
