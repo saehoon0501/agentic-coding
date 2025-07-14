@@ -1,23 +1,39 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 function TimeboxTimer() {
   const [task, setTask] = useState('');
   const [duration, setDuration] = useState(45);
   const [isRunning, setIsRunning] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
+  const [history, setHistory] = useState([]);
   const intervalRef = useRef(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('timeboxHistory');
+    if (stored) {
+      setHistory(JSON.parse(stored));
+    }
+  }, []);
+
+  const handleComplete = useCallback(() => {
+    const entry = { task, duration, completedAt: Date.now() };
+    const updated = [entry, ...history].slice(0, 5);
+    setHistory(updated);
+    localStorage.setItem('timeboxHistory', JSON.stringify(updated));
+  }, [task, duration, history]);
 
   useEffect(() => {
     if (isRunning && timeLeft > 0) {
       intervalRef.current = setInterval(() => {
         setTimeLeft((prev) => prev - 1);
       }, 1000);
-    } else if (timeLeft === 0) {
+    } else if (timeLeft === 0 && isRunning) {
       clearInterval(intervalRef.current);
       setIsRunning(false);
+      handleComplete();
     }
     return () => clearInterval(intervalRef.current);
-  }, [isRunning, timeLeft]);
+  }, [isRunning, timeLeft, handleComplete]);
 
   const handleStart = () => {
     setTimeLeft(duration * 60);
@@ -161,6 +177,20 @@ function TimeboxTimer() {
       <div style={{ textAlign: 'center', color: '#6b7280', fontSize: 15, marginTop: isRunning ? 8 : 0, minHeight: 24 }}>
         {isRunning ? 'Stay focused on your current task!' : ''}
       </div>
+
+      {history.length > 0 && (
+        <div style={{ marginTop: 12 }}>
+          <div style={{ fontWeight: 600, marginBottom: 4, fontSize: 15 }}>Recent Timeboxes</div>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {history.map((item, idx) => (
+              <li key={idx} style={{ fontSize: 14, marginBottom: 2 }}>
+                <span style={{ fontWeight: 600 }}>{item.task}</span> - {item.duration}m -{' '}
+                {new Date(item.completedAt).toLocaleString()}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
