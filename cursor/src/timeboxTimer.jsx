@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Box } from '@mui/material';
 import { CheckCircle } from '@mui/icons-material';
 
@@ -45,7 +45,7 @@ function TimeboxTimer({ isDarkMode = false }) {
   };
 
   // Save completed timebox to localStorage
-  const saveCompletedTimebox = (taskName, durationMinutes) => {
+  const saveCompletedTimebox = useCallback((taskName, durationMinutes) => {
     const completedTimebox = {
       id: Date.now(),
       task: taskName,
@@ -56,7 +56,7 @@ function TimeboxTimer({ isDarkMode = false }) {
     const updatedHistory = [completedTimebox, ...history].slice(0, 5); // Keep only last 5
     setHistory(updatedHistory);
     localStorage.setItem('timeboxHistory', JSON.stringify(updatedHistory));
-  };
+  }, [history]);
 
   useEffect(() => {
     if (isRunning && timeLeft > 0) {
@@ -72,7 +72,7 @@ function TimeboxTimer({ isDarkMode = false }) {
       saveCompletedTimebox(task, duration);
     }
     return () => clearInterval(intervalRef.current);
-  }, [isRunning, timeLeft, task, duration, history]);
+  }, [isRunning, timeLeft, task, duration, saveCompletedTimebox]);
 
   const handleStart = () => {
     setTimeLeft(duration * 60);
@@ -109,6 +109,82 @@ function TimeboxTimer({ isDarkMode = false }) {
     timerBg: isDarkMode ? '#0f172a' : '#f3f4f6',
     timerBorder: isDarkMode ? '#374151' : '#e5e7eb',
   };
+
+  // Calculate progress for circular progress bar
+  const totalSeconds = duration * 60;
+  const progress = isRunning ? (timeLeft / totalSeconds) * 100 : 100;
+  
+  // SVG circle properties
+  const size = 200;
+  const strokeWidth = 8;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const strokeDasharray = `${circumference} ${circumference}`;
+  const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+  const CircularProgress = () => (
+    <div style={{
+      position: 'relative',
+      width: size,
+      height: size,
+      margin: '0 auto',
+    }}>
+      <svg
+        width={size}
+        height={size}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          transform: 'rotate(-90deg)',
+        }}
+      >
+        {/* Background circle */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={isDarkMode ? '#374151' : '#e5e7eb'}
+          strokeWidth={strokeWidth}
+          fill="none"
+        />
+        {/* Progress circle */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={progress > 20 ? "#3b82f6" : "#ef4444"}
+          strokeWidth={strokeWidth}
+          fill="none"
+          strokeDasharray={strokeDasharray}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          style={{
+            transition: 'stroke-dashoffset 0.5s ease-in-out, stroke 0.3s ease-in-out',
+          }}
+        />
+      </svg>
+      {/* Timer content in center */}
+      <div style={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        textAlign: 'center',
+        width: '140px',
+      }}>
+        <div style={{ color: colors.textSecondary, fontSize: 14, marginBottom: 4 }}>
+          {task}
+        </div>
+        <div style={{ fontSize: 32, fontWeight: 700, letterSpacing: 1, color: colors.textPrimary }}>
+          {formatTime(timeLeft)}
+        </div>
+        <div style={{ color: colors.textSecondary, fontSize: 12, marginTop: 2 }}>
+          remaining
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <>
@@ -318,6 +394,20 @@ function TimeboxTimer({ isDarkMode = false }) {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Circular Progress Bar */}
+        {isRunning && (
+          <div style={{
+            background: colors.timerBg,
+            borderRadius: 12,
+            padding: '2rem 1rem',
+            marginBottom: 18,
+            textAlign: 'center',
+            border: `1px solid ${colors.timerBorder}`,
+          }}>
+            <CircularProgress />
           </div>
         )}
       </div>
