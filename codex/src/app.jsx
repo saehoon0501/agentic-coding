@@ -1,34 +1,48 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import IconButton from '@mui/material/IconButton';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
-import LightModeIcon from '@mui/icons-material/LightMode';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ThemeProvider, createTheme, CssBaseline, IconButton } from '@mui/material';
+import { DarkMode, LightMode } from '@mui/icons-material';
 import TimeboxTimer from './timeboxTimer';
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
 
-  const theme = useMemo(() => createTheme({
-    palette: { mode: darkMode ? 'dark' : 'light' },
-  }), [darkMode]);
+  const theme = useMemo(
+    () =>
+      createTheme({
+        palette: {
+          mode: darkMode ? 'dark' : 'light',
+        },
+      }),
+    [darkMode],
+  );
 
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    document.documentElement.classList.toggle('dark', darkMode);
   }, [darkMode]);
 
-  const toggleDarkMode = () => setDarkMode(prev => !prev);
+  const toggleDarkMode = () => {
+    setDarkMode((prev) => !prev);
+  };
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <div className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen flex items-center justify-center" style={{ position: 'relative' }}>
-        <IconButton onClick={toggleDarkMode} style={{ position: 'absolute', top: 16, right: 16 }} color="inherit">
-          {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
+      <div
+        className="bg-gray-100 dark:bg-gray-800"
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+        }}
+      >
+        <IconButton
+          aria-label="toggle dark mode"
+          onClick={toggleDarkMode}
+          sx={{ position: 'absolute', top: 8, right: 8 }}
+        >
+          {darkMode ? <LightMode /> : <DarkMode />}
         </IconButton>
         <TimeboxTimer />
       </div>
