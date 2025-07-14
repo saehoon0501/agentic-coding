@@ -8,6 +8,7 @@ function TimeboxTimer() {
   const [timeLeft, setTimeLeft] = useState(0);
   const [history, setHistory] = useState([]);
   const intervalRef = useRef(null);
+  const initialTimeRef = useRef(0);
 
   useEffect(() => {
     const stored = localStorage.getItem('timeboxHistory');
@@ -37,9 +38,9 @@ function TimeboxTimer() {
   }, [isRunning, timeLeft, handleComplete]);
 
   const handleStart = () => {
-    if (timeLeft === 0) {
-      setTimeLeft(duration * 60);
-    }
+    const total = duration * 60;
+    initialTimeRef.current = total;
+    setTimeLeft(total);
     setIsRunning(true);
   };
 
@@ -61,6 +62,11 @@ function TimeboxTimer() {
     const s = (seconds % 60).toString().padStart(2, '0');
     return `${m}:${s}`;
   };
+
+  const radius = 60;
+  const circumference = 2 * Math.PI * radius;
+  const total = initialTimeRef.current || 1;
+  const progress = timeLeft / total;
 
   return (
     <div
@@ -166,11 +172,44 @@ function TimeboxTimer() {
           textAlign: 'center',
           border: '1px solid #e5e7eb',
         }}>
-        <div className="dark:text-gray-400" style={{ color: '#6b7280', fontSize: 17, marginBottom: 2 }}>
-          Current Task: <span style={{ fontWeight: 600, color: '#111827' }}>{task}</span>
-        </div>
-          <div style={{ fontSize: 44, fontWeight: 700, letterSpacing: 1, margin: '8px 0' }}>{formatTime(timeLeft)}</div>
-          <div className="dark:text-gray-400" style={{ color: '#6b7280', fontSize: 15 }}>Time remaining</div>
+          <div style={{ color: '#6b7280', fontSize: 17, marginBottom: 12 }}>
+            Current Task: <span style={{ fontWeight: 600, color: '#111827' }}>{task}</span>
+          </div>
+          <div style={{ position: 'relative', width: 140, height: 140, margin: '0 auto' }}>
+            <svg width={140} height={140} style={{ transform: 'rotate(-90deg)' }}>
+              <circle
+                cx={70}
+                cy={70}
+                r={radius}
+                stroke="#e5e7eb"
+                strokeWidth={8}
+                fill="transparent"
+              />
+              <circle
+                cx={70}
+                cy={70}
+                r={radius}
+                stroke="#111827"
+                strokeWidth={8}
+                fill="transparent"
+                style={{
+                  strokeDasharray: circumference,
+                  strokeDashoffset: circumference * (1 - progress),
+                  transition: 'stroke-dashoffset 1s linear',
+                }}
+              />
+            </svg>
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              fontSize: 44,
+              fontWeight: 700,
+              letterSpacing: 1,
+            }}>{formatTime(timeLeft)}</div>
+          </div>
+          <div style={{ color: '#6b7280', fontSize: 15, marginTop: 8 }}>Time remaining</div>
         </div>
       )}
 
