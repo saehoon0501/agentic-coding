@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Pause, PlayArrow, RestartAlt, Timer } from '@mui/icons-material';
+import Snackbar from '@mui/material/Snackbar';
+import chimeSrc from './chime.wav';
 
 function TimeboxTimer() {
   const [task, setTask] = useState('');
@@ -7,14 +9,17 @@ function TimeboxTimer() {
   const [isRunning, setIsRunning] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
   const [history, setHistory] = useState([]);
+  const [open, setOpen] = useState(false);
   const intervalRef = useRef(null);
   const initialTimeRef = useRef(0);
+  const audioRef = useRef(null);
 
   useEffect(() => {
     const stored = localStorage.getItem('timeboxHistory');
     if (stored) {
       setHistory(JSON.parse(stored));
     }
+    audioRef.current = new Audio(chimeSrc);
   }, []);
 
   const handleComplete = useCallback(() => {
@@ -22,6 +27,10 @@ function TimeboxTimer() {
     const updated = [entry, ...history].slice(0, 5);
     setHistory(updated);
     localStorage.setItem('timeboxHistory', JSON.stringify(updated));
+    if (audioRef.current) {
+      audioRef.current.play().catch(() => {});
+    }
+    setOpen(true);
   }, [task, duration, history]);
 
   useEffect(() => {
@@ -57,6 +66,11 @@ function TimeboxTimer() {
     setTimeLeft(0);
   };
 
+  const handleClose = (_, reason) => {
+    if (reason === 'clickaway') return;
+    setOpen(false);
+  };
+
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, '0');
     const s = (seconds % 60).toString().padStart(2, '0');
@@ -69,6 +83,7 @@ function TimeboxTimer() {
   const progress = timeLeft / total;
 
   return (
+    <>
     <div
       className="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
       style={{
@@ -268,6 +283,13 @@ function TimeboxTimer() {
         </div>
       )}
     </div>
+    <Snackbar
+      open={open}
+      autoHideDuration={3000}
+      onClose={handleClose}
+      message="Timebox complete!"
+    />
+    </>
   );
 }
 
