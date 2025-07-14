@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Pause, PlayArrow, RestartAlt, Timer } from '@mui/icons-material';
 
 function TimeboxTimer() {
   const [task, setTask] = useState('');
@@ -20,8 +21,23 @@ function TimeboxTimer() {
   }, [isRunning, timeLeft]);
 
   const handleStart = () => {
-    setTimeLeft(duration * 60);
+    if (timeLeft === 0) {
+      setTimeLeft(duration * 60);
+    }
     setIsRunning(true);
+  };
+
+  const handlePause = () => {
+    clearInterval(intervalRef.current);
+    setIsRunning(false);
+  };
+
+  const handleReset = () => {
+    clearInterval(intervalRef.current);
+    setIsRunning(false);
+    setTask('');
+    setDuration(45);
+    setTimeLeft(0);
   };
 
   const formatTime = (seconds) => {
@@ -51,7 +67,7 @@ function TimeboxTimer() {
     >
       <div style={{ textAlign: 'center', marginBottom: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 2 }}>
-          <span style={{ fontSize: 28 }}>⏱</span>
+          <Timer sx={{ fontSize: 28 }} />
           <span style={{ fontSize: 28, fontWeight: 700 }}>Timebox Timer</span>
         </div>
         <div className="dark:text-gray-400" style={{ color: '#6b7280', fontSize: 16, marginTop: 2 }}>Focus on one task at a time</div>
@@ -120,7 +136,7 @@ function TimeboxTimer() {
             onClick={handleStart}
             disabled={!task || duration < 1}
           >
-            ▶ Start Timer
+            <PlayArrow sx={{ fontSize: 20, verticalAlign: 'middle', mr: 0.5 }} /> Start Timer
           </button>
         )}
       </div>
@@ -143,24 +159,40 @@ function TimeboxTimer() {
       )}
 
       {isRunning && (
-        <button
-          className="dark:bg-gray-600"
-          style={{
-            width: '100%',
-            background: '#9ca3af',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 8,
-            padding: '12px 0',
-            fontSize: 17,
-            fontWeight: 600,
-            cursor: 'not-allowed',
-            marginTop: 4,
-          }}
-          disabled
-        >
-          ⏰ Timer Running...
-        </button>
+        <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+          <button
+            style={{
+              flex: 1,
+              background: '#111827',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              padding: '12px 0',
+              fontSize: 17,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+            onClick={handlePause}
+          >
+            <Pause sx={{ fontSize: 20, verticalAlign: 'middle', mr: 0.5 }} /> Pause
+          </button>
+          <button
+            style={{
+              flex: 1,
+              background: '#9ca3af',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              padding: '12px 0',
+              fontSize: 17,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+            onClick={handleReset}
+          >
+            <RestartAlt sx={{ fontSize: 20, verticalAlign: 'middle', mr: 0.5 }} /> Reset
+          </button>
+        </div>
       )}
 
       <div className="dark:text-gray-400" style={{ textAlign: 'center', color: '#6b7280', fontSize: 15, marginTop: isRunning ? 8 : 0, minHeight: 24 }}>
