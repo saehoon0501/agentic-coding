@@ -1,10 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Box } from '@mui/material';
+import { CheckCircle } from '@mui/icons-material';
 
 function TimeboxTimer({ isDarkMode = false }) {
   const [task, setTask] = useState('');
   const [duration, setDuration] = useState(45);
   const [isRunning, setIsRunning] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [history, setHistory] = useState([]);
   const intervalRef = useRef(null);
 
@@ -15,6 +18,31 @@ function TimeboxTimer({ isDarkMode = false }) {
       setHistory(JSON.parse(savedHistory));
     }
   }, []);
+
+  // Function to play chime sound
+  const playChime = () => {
+    try {
+      // Create a simple chime sound using Web Audio API
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5 note
+      oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5 note
+      oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5 note
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
+    } catch (error) {
+      console.log('Audio playback not supported:', error);
+    }
+  };
 
   // Save completed timebox to localStorage
   const saveCompletedTimebox = (taskName, durationMinutes) => {
@@ -38,6 +66,8 @@ function TimeboxTimer({ isDarkMode = false }) {
     } else if (timeLeft === 0 && isRunning) {
       clearInterval(intervalRef.current);
       setIsRunning(false);
+      playChime();
+      setShowCompletionModal(true);
       // Save completed timebox to history when timer reaches zero
       saveCompletedTimebox(task, duration);
     }
@@ -47,6 +77,10 @@ function TimeboxTimer({ isDarkMode = false }) {
   const handleStart = () => {
     setTimeLeft(duration * 60);
     setIsRunning(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowCompletionModal(false);
   };
 
   const formatTime = (seconds) => {
@@ -77,155 +111,15 @@ function TimeboxTimer({ isDarkMode = false }) {
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: '2rem',
-      margin: '0 auto',
-      maxWidth: '600px',
-    }}>
+    <>
       <div style={{
-        background: colors.cardBg,
-        borderRadius: '18px',
-        boxShadow: isDarkMode 
-          ? '0 4px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.05)'
-          : '0 4px 24px rgba(0,0,0,0.10)',
-        border: `1.5px solid ${colors.cardBorder}`,
-        padding: '2.5rem 2.5rem 2rem 2.5rem',
-        minWidth: 370,
-        maxWidth: 400,
-        width: 370,
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'stretch',
-        gap: '1.5rem',
-        transition: 'all 0.3s ease-in-out',
+        alignItems: 'center',
+        gap: '2rem',
+        margin: '0 auto',
+        maxWidth: '600px',
       }}>
-        <div style={{ textAlign: 'center', marginBottom: 8 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 2 }}>
-            <span style={{ fontSize: 28 }}>⏱</span>
-            <span style={{ fontSize: 28, fontWeight: 700, color: colors.textPrimary }}>Timebox Timer</span>
-          </div>
-          <div style={{ color: colors.textSecondary, fontSize: 16, marginTop: 2 }}>Focus on one task at a time</div>
-        </div>
-        
-        <div>
-          <label style={{ fontWeight: 500, fontSize: 15, display: 'block', marginBottom: 4, color: colors.textPrimary }}>Task Name</label>
-          <input
-            type="text"
-            placeholder="Record podcast"
-            value={task}
-            onChange={e => setTask(e.target.value)}
-            style={{
-              width: '100%',
-              marginTop: 0,
-              padding: '10px 12px',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: 8,
-              fontSize: 15,
-              outline: 'none',
-              marginBottom: 18,
-              background: isRunning ? colors.inputBgDisabled : colors.inputBg,
-              color: isRunning ? colors.inputTextDisabled : colors.textPrimary,
-              cursor: isRunning ? 'not-allowed' : 'text',
-              transition: 'all 0.2s ease-in-out',
-            }}
-            disabled={isRunning}
-          />
-          <label style={{ fontWeight: 500, fontSize: 15, display: 'block', marginBottom: 4, color: colors.textPrimary }}>Duration (minutes)</label>
-          <input
-            type="number"
-            min={1}
-            placeholder="45"
-            value={duration}
-            onChange={e => setDuration(Number(e.target.value))}
-            style={{
-              width: '100%',
-              marginTop: 0,
-              padding: '10px 12px',
-              border: `1px solid ${colors.inputBorder}`,
-              borderRadius: 8,
-              fontSize: 15,
-              outline: 'none',
-              marginBottom: 18,
-              background: isRunning ? colors.inputBgDisabled : colors.inputBg,
-              color: isRunning ? colors.inputTextDisabled : colors.textPrimary,
-              cursor: isRunning ? 'not-allowed' : 'text',
-              transition: 'all 0.2s ease-in-out',
-            }}
-            disabled={isRunning}
-          />
-          {!isRunning && (
-            <button
-              style={{
-                width: '100%',
-                background: colors.buttonBg,
-                color: '#fff',
-                border: 'none',
-                borderRadius: 8,
-                padding: '12px 0',
-                fontSize: 17,
-                fontWeight: 600,
-                cursor: !task || duration < 1 ? 'not-allowed' : 'pointer',
-                marginTop: 4,
-                opacity: !task || duration < 1 ? 0.7 : 1,
-                transition: 'all 0.2s ease-in-out',
-              }}
-              onClick={handleStart}
-              disabled={!task || duration < 1}
-            >
-              ▶ Start Timer
-            </button>
-          )}
-        </div>
-
-        {isRunning && (
-          <div style={{
-            background: colors.timerBg,
-            borderRadius: 12,
-            padding: '1.5rem 0.5rem',
-            marginBottom: 18,
-            textAlign: 'center',
-            border: `1px solid ${colors.timerBorder}`,
-            transition: 'all 0.3s ease-in-out',
-          }}>
-            <div style={{ color: colors.textSecondary, fontSize: 17, marginBottom: 2 }}>
-              Current Task: <span style={{ fontWeight: 600, color: colors.textPrimary }}>{task}</span>
-            </div>
-            <div style={{ fontSize: 44, fontWeight: 700, letterSpacing: 1, margin: '8px 0', color: colors.textPrimary }}>{formatTime(timeLeft)}</div>
-            <div style={{ color: colors.textSecondary, fontSize: 15 }}>Time remaining</div>
-          </div>
-        )}
-
-        {isRunning && (
-          <button
-            style={{
-              width: '100%',
-              background: colors.buttonBgDisabled,
-              color: '#fff',
-              border: 'none',
-              borderRadius: 8,
-              padding: '12px 0',
-              fontSize: 17,
-              fontWeight: 600,
-              cursor: 'not-allowed',
-              marginTop: 4,
-              transition: 'all 0.2s ease-in-out',
-            }}
-            disabled
-          >
-            ⏰ Timer Running...
-          </button>
-        )}
-
-        <div style={{ textAlign: 'center', color: colors.textSecondary, fontSize: 15, marginTop: isRunning ? 8 : 0, minHeight: 24 }}>
-          {isRunning ? 'Stay focused on your current task!' : ''}
-        </div>
-      </div>
-
-      {/* History Section */}
-      {history.length > 0 && (
         <div style={{
           background: colors.cardBg,
           borderRadius: '18px',
@@ -233,59 +127,255 @@ function TimeboxTimer({ isDarkMode = false }) {
             ? '0 4px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.05)'
             : '0 4px 24px rgba(0,0,0,0.10)',
           border: `1.5px solid ${colors.cardBorder}`,
-          padding: '2rem 2.5rem',
+          padding: '2.5rem 2.5rem 2rem 2.5rem',
           minWidth: 370,
           maxWidth: 400,
           width: 370,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'stretch',
+          gap: '1.5rem',
           transition: 'all 0.3s ease-in-out',
         }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-            marginBottom: '1.5rem',
-          }}>
-            <span style={{ fontSize: 24 }}>📈</span>
-            <span style={{ fontSize: 24, fontWeight: 700, color: colors.textPrimary }}>Recent Timeboxes</span>
+          <div style={{ textAlign: 'center', marginBottom: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 2 }}>
+              <span style={{ fontSize: 28 }}>⏱</span>
+              <span style={{ fontSize: 28, fontWeight: 700, color: colors.textPrimary }}>Timebox Timer</span>
+            </div>
+            <div style={{ color: colors.textSecondary, fontSize: 16, marginTop: 2 }}>Focus on one task at a time</div>
           </div>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {history.map((timebox) => (
-              <div
-                key={timebox.id}
+          <div>
+            <label style={{ fontWeight: 500, fontSize: 15, display: 'block', marginBottom: 4, color: colors.textPrimary }}>Task Name</label>
+            <input
+              type="text"
+              placeholder="Record podcast"
+              value={task}
+              onChange={e => setTask(e.target.value)}
+              style={{
+                width: '100%',
+                marginTop: 0,
+                padding: '10px 12px',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: 8,
+                fontSize: 15,
+                outline: 'none',
+                marginBottom: 18,
+                background: isRunning ? colors.inputBgDisabled : colors.inputBg,
+                color: isRunning ? colors.inputTextDisabled : colors.textPrimary,
+                cursor: isRunning ? 'not-allowed' : 'text',
+                transition: 'all 0.2s ease-in-out',
+              }}
+              disabled={isRunning}
+            />
+            <label style={{ fontWeight: 500, fontSize: 15, display: 'block', marginBottom: 4, color: colors.textPrimary }}>Duration (minutes)</label>
+            <input
+              type="number"
+              min={1}
+              placeholder="45"
+              value={duration}
+              onChange={e => setDuration(Number(e.target.value))}
+              style={{
+                width: '100%',
+                marginTop: 0,
+                padding: '10px 12px',
+                border: `1px solid ${colors.inputBorder}`,
+                borderRadius: 8,
+                fontSize: 15,
+                outline: 'none',
+                marginBottom: 18,
+                background: isRunning ? colors.inputBgDisabled : colors.inputBg,
+                color: isRunning ? colors.inputTextDisabled : colors.textPrimary,
+                cursor: isRunning ? 'not-allowed' : 'text',
+                transition: 'all 0.2s ease-in-out',
+              }}
+              disabled={isRunning}
+            />
+            {!isRunning && (
+              <button
                 style={{
-                  background: colors.inputBg,
-                  border: `1px solid ${colors.inputBorder}`,
+                  width: '100%',
+                  background: colors.buttonBg,
+                  color: '#fff',
+                  border: 'none',
                   borderRadius: 8,
-                  padding: '1rem',
+                  padding: '12px 0',
+                  fontSize: 17,
+                  fontWeight: 600,
+                  cursor: !task || duration < 1 ? 'not-allowed' : 'pointer',
+                  marginTop: 4,
+                  opacity: !task || duration < 1 ? 0.7 : 1,
                   transition: 'all 0.2s ease-in-out',
                 }}
+                onClick={handleStart}
+                disabled={!task || duration < 1}
               >
-                <div style={{
-                  fontWeight: 600,
-                  fontSize: 15,
-                  color: colors.textPrimary,
-                  marginBottom: 4,
-                }}>
-                  {timebox.task}
-                </div>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  fontSize: 13,
-                  color: colors.textSecondary,
-                }}>
-                  <span>{timebox.duration} minutes</span>
-                  <span>{formatDateTime(timebox.completedAt)}</span>
-                </div>
+                ▶ Start Timer
+              </button>
+            )}
+          </div>
+
+          {isRunning && (
+            <div style={{
+              background: colors.timerBg,
+              borderRadius: 12,
+              padding: '1.5rem 0.5rem',
+              marginBottom: 18,
+              textAlign: 'center',
+              border: `1px solid ${colors.timerBorder}`,
+              transition: 'all 0.3s ease-in-out',
+            }}>
+              <div style={{ color: colors.textSecondary, fontSize: 17, marginBottom: 2 }}>
+                Current Task: <span style={{ fontWeight: 600, color: colors.textPrimary }}>{task}</span>
               </div>
-            ))}
+              <div style={{ fontSize: 44, fontWeight: 700, letterSpacing: 1, margin: '8px 0', color: colors.textPrimary }}>{formatTime(timeLeft)}</div>
+              <div style={{ color: colors.textSecondary, fontSize: 15 }}>Time remaining</div>
+            </div>
+          )}
+
+          {isRunning && (
+            <button
+              style={{
+                width: '100%',
+                background: colors.buttonBgDisabled,
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                padding: '12px 0',
+                fontSize: 17,
+                fontWeight: 600,
+                cursor: 'not-allowed',
+                marginTop: 4,
+                transition: 'all 0.2s ease-in-out',
+              }}
+              disabled
+            >
+              ⏰ Timer Running...
+            </button>
+          )}
+
+          <div style={{ textAlign: 'center', color: colors.textSecondary, fontSize: 15, marginTop: isRunning ? 8 : 0, minHeight: 24 }}>
+            {isRunning ? 'Stay focused on your current task!' : ''}
           </div>
         </div>
-      )}
-    </div>
+
+        {/* History Section */}
+        {history.length > 0 && (
+          <div style={{
+            background: colors.cardBg,
+            borderRadius: '18px',
+            boxShadow: isDarkMode 
+              ? '0 4px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.05)'
+              : '0 4px 24px rgba(0,0,0,0.10)',
+            border: `1.5px solid ${colors.cardBorder}`,
+            padding: '2rem 2.5rem',
+            minWidth: 370,
+            maxWidth: 400,
+            width: 370,
+            transition: 'all 0.3s ease-in-out',
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              marginBottom: '1.5rem',
+            }}>
+              <span style={{ fontSize: 24 }}>📈</span>
+              <span style={{ fontSize: 24, fontWeight: 700, color: colors.textPrimary }}>Recent Timeboxes</span>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {history.map((timebox) => (
+                <div
+                  key={timebox.id}
+                  style={{
+                    background: colors.inputBg,
+                    border: `1px solid ${colors.inputBorder}`,
+                    borderRadius: 8,
+                    padding: '1rem',
+                    transition: 'all 0.2s ease-in-out',
+                  }}
+                >
+                  <div style={{
+                    fontWeight: 600,
+                    fontSize: 15,
+                    color: colors.textPrimary,
+                    marginBottom: 4,
+                  }}>
+                    {timebox.task}
+                  </div>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    fontSize: 13,
+                    color: colors.textSecondary,
+                  }}>
+                    <span>{timebox.duration} minutes</span>
+                    <span>{formatDateTime(timebox.completedAt)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Completion Modal */}
+      <Dialog 
+        open={showCompletionModal} 
+        onClose={handleCloseModal}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            padding: 2,
+          }
+        }}
+      >
+        <DialogTitle sx={{ textAlign: 'center', pb: 1 }}>
+          <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
+            <CheckCircle sx={{ color: '#4caf50', fontSize: 32 }} />
+            <Typography variant="h5" component="div" sx={{ fontWeight: 600, color: '#111827' }}>
+              Timebox Complete!
+            </Typography>
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ textAlign: 'center', py: 2 }}>
+          <Typography variant="body1" sx={{ color: '#6b7280', mb: 1 }}>
+            Great job! You've completed your timebox session.
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#111827', fontWeight: 500 }}>
+            Task: {task}
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#6b7280' }}>
+            Duration: {duration} minutes
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', pt: 1 }}>
+          <Button 
+            onClick={handleCloseModal} 
+            variant="contained" 
+            sx={{
+              bgcolor: '#111827',
+              color: '#fff',
+              px: 4,
+              py: 1,
+              borderRadius: 2,
+              fontWeight: 600,
+              textTransform: 'none',
+              '&:hover': {
+                bgcolor: '#374151',
+              }
+            }}
+          >
+            Done
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }
 
