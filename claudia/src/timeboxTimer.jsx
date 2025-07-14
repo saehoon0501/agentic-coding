@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Modal, Box, Typography, Button } from '@mui/material';
+import { Modal, Box, Typography, Button, useTheme } from '@mui/material';
 
 function TimeboxTimer() {
+  const theme = useTheme();
   const [task, setTask] = useState('');
   const [duration, setDuration] = useState(45);
   const [isRunning, setIsRunning] = useState(false);
@@ -78,10 +79,12 @@ function TimeboxTimer() {
 
   return (
     <div style={{
-      background: '#fff',
+      background: theme.palette.background.paper,
       borderRadius: '18px',
-      boxShadow: '0 4px 24px rgba(0,0,0,0.10)',
-      border: '1.5px solid #e5e7eb',
+      boxShadow: theme.palette.mode === 'dark' 
+        ? '0 4px 24px rgba(0,0,0,0.25)' 
+        : '0 4px 24px rgba(0,0,0,0.10)',
+      border: `1.5px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
       padding: '2.5rem 2.5rem 2rem 2.5rem',
       minWidth: 370,
       maxWidth: 400,
@@ -95,13 +98,27 @@ function TimeboxTimer() {
       <div style={{ textAlign: 'center', marginBottom: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 2 }}>
           <span style={{ fontSize: 28 }}>⏱</span>
-          <span style={{ fontSize: 28, fontWeight: 700 }}>Timebox Timer</span>
+          <span style={{ 
+            fontSize: 28, 
+            fontWeight: 700,
+            color: theme.palette.text.primary
+          }}>Timebox Timer</span>
         </div>
-        <div style={{ color: '#6b7280', fontSize: 16, marginTop: 2 }}>Focus on one task at a time</div>
+        <div style={{ 
+          color: theme.palette.text.secondary, 
+          fontSize: 16, 
+          marginTop: 2 
+        }}>Focus on one task at a time</div>
       </div>
       
       <div>
-        <label style={{ fontWeight: 500, fontSize: 15, display: 'block', marginBottom: 4 }}>Task Name</label>
+        <label style={{ 
+          fontWeight: 500, 
+          fontSize: 15, 
+          display: 'block', 
+          marginBottom: 4,
+          color: theme.palette.text.primary
+        }}>Task Name</label>
         <input
           type="text"
           placeholder="Record podcast"
@@ -111,18 +128,28 @@ function TimeboxTimer() {
             width: '100%',
             marginTop: 0,
             padding: '10px 12px',
-            border: '1px solid #e5e7eb',
+            border: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
             borderRadius: 8,
             fontSize: 15,
             outline: 'none',
             marginBottom: 18,
-            background: isRunning ? '#f3f4f6' : '#f9fafb',
-            color: isRunning ? '#9ca3af' : '#111827',
+            background: isRunning 
+              ? (theme.palette.mode === 'dark' ? '#1f2937' : '#f3f4f6')
+              : (theme.palette.mode === 'dark' ? '#111827' : '#f9fafb'),
+            color: isRunning 
+              ? theme.palette.text.disabled 
+              : theme.palette.text.primary,
             cursor: isRunning ? 'not-allowed' : 'text',
           }}
           disabled={isRunning}
         />
-        <label style={{ fontWeight: 500, fontSize: 15, display: 'block', marginBottom: 4 }}>Duration (minutes)</label>
+        <label style={{ 
+          fontWeight: 500, 
+          fontSize: 15, 
+          display: 'block', 
+          marginBottom: 4,
+          color: theme.palette.text.primary
+        }}>Duration (minutes)</label>
         <input
           type="number"
           min={1}
@@ -133,13 +160,17 @@ function TimeboxTimer() {
             width: '100%',
             marginTop: 0,
             padding: '10px 12px',
-            border: '1px solid #e5e7eb',
+            border: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
             borderRadius: 8,
             fontSize: 15,
             outline: 'none',
             marginBottom: 18,
-            background: isRunning ? '#f3f4f6' : '#f9fafb',
-            color: isRunning ? '#9ca3af' : '#111827',
+            background: isRunning 
+              ? (theme.palette.mode === 'dark' ? '#1f2937' : '#f3f4f6')
+              : (theme.palette.mode === 'dark' ? '#111827' : '#f9fafb'),
+            color: isRunning 
+              ? theme.palette.text.disabled 
+              : theme.palette.text.primary,
             cursor: isRunning ? 'not-allowed' : 'text',
           }}
           disabled={isRunning}
@@ -148,8 +179,8 @@ function TimeboxTimer() {
           <button
             style={{
               width: '100%',
-              background: '#111827',
-              color: '#fff',
+              background: theme.palette.primary.main,
+              color: theme.palette.primary.contrastText,
               border: 'none',
               borderRadius: 8,
               padding: '12px 0',
@@ -169,18 +200,34 @@ function TimeboxTimer() {
 
       {isRunning && (
         <div style={{
-          background: '#f3f4f6',
+          background: theme.palette.mode === 'dark' ? '#1f2937' : '#f3f4f6',
           borderRadius: 12,
           padding: '1.5rem 0.5rem',
           marginBottom: 18,
           textAlign: 'center',
-          border: '1px solid #e5e7eb',
+          border: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
         }}>
-          <div style={{ color: '#6b7280', fontSize: 17, marginBottom: 2 }}>
-            Current Task: <span style={{ fontWeight: 600, color: '#111827' }}>{task}</span>
+          <div style={{ 
+            color: theme.palette.text.secondary, 
+            fontSize: 17, 
+            marginBottom: 2 
+          }}>
+            Current Task: <span style={{ 
+              fontWeight: 600, 
+              color: theme.palette.text.primary 
+            }}>{task}</span>
           </div>
-          <div style={{ fontSize: 44, fontWeight: 700, letterSpacing: 1, margin: '8px 0' }}>{formatTime(timeLeft)}</div>
-          <div style={{ color: '#6b7280', fontSize: 15 }}>Time remaining</div>
+          <div style={{ 
+            fontSize: 44, 
+            fontWeight: 700, 
+            letterSpacing: 1, 
+            margin: '8px 0',
+            color: theme.palette.text.primary
+          }}>{formatTime(timeLeft)}</div>
+          <div style={{ 
+            color: theme.palette.text.secondary, 
+            fontSize: 15 
+          }}>Time remaining</div>
         </div>
       )}
 
@@ -188,7 +235,7 @@ function TimeboxTimer() {
         <button
           style={{
             width: '100%',
-            background: '#9ca3af',
+            background: theme.palette.mode === 'dark' ? '#4b5563' : '#9ca3af',
             color: '#fff',
             border: 'none',
             borderRadius: 8,
@@ -204,7 +251,13 @@ function TimeboxTimer() {
         </button>
       )}
 
-      <div style={{ textAlign: 'center', color: '#6b7280', fontSize: 15, marginTop: isRunning ? 8 : 0, minHeight: 24 }}>
+      <div style={{ 
+        textAlign: 'center', 
+        color: theme.palette.text.secondary, 
+        fontSize: 15, 
+        marginTop: isRunning ? 8 : 0, 
+        minHeight: 24 
+      }}>
         {isRunning ? 'Stay focused on your current task!' : ''}
       </div>
 
