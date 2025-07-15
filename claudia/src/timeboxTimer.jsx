@@ -129,11 +129,70 @@ function TimeboxTimer() {
           marginBottom: 18,
           textAlign: 'center',
           border: '1px solid #e5e7eb',
+          position: 'relative',
         }}>
           <div style={{ color: '#6b7280', fontSize: 17, marginBottom: 2 }}>
             Current Task: <span style={{ fontWeight: 600, color: '#111827' }}>{task}</span>
           </div>
-          <div style={{ fontSize: 44, fontWeight: 700, letterSpacing: 1, margin: '8px 0' }}>{formatTime(timeLeft)}</div>
+          
+          {/* Circular Progress Bar */}
+          <div style={{ 
+            position: 'relative', 
+            display: 'inline-block',
+            margin: '8px 0'
+          }}>
+            <svg 
+              width="140" 
+              height="140" 
+              style={{ 
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%) rotate(-90deg)',
+                zIndex: 1
+              }}
+            >
+              {/* Background circle */}
+              <circle
+                cx="70"
+                cy="70"
+                r="65"
+                fill="none"
+                stroke="#e5e7eb"
+                strokeWidth="4"
+              />
+              {/* Progress circle */}
+              <circle
+                cx="70"
+                cy="70"
+                r="65"
+                fill="none"
+                stroke="#111827"
+                strokeWidth="4"
+                strokeLinecap="round"
+                strokeDasharray={`${2 * Math.PI * 65}`}
+                strokeDashoffset={`${2 * Math.PI * 65 * (1 - (timeLeft / (duration * 60)))}`}
+                style={{
+                  transition: 'stroke-dashoffset 1s ease-in-out'
+                }}
+              />
+            </svg>
+            <div style={{ 
+              fontSize: 44, 
+              fontWeight: 700, 
+              letterSpacing: 1,
+              position: 'relative',
+              zIndex: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '140px',
+              height: '140px'
+            }}>
+              {formatTime(timeLeft)}
+            </div>
+          </div>
+          
           <div style={{ color: '#6b7280', fontSize: 15 }}>Time remaining</div>
         </div>
       )}
