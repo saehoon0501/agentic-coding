@@ -1,20 +1,31 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Modal, Box, Typography, Button } from '@mui/material';
+import { CheckCircle } from '@mui/icons-material';
+import chimeSound from './chime.wav';
 
 function TimeboxTimer() {
   const [task, setTask] = useState('');
   const [duration, setDuration] = useState(45);
   const [isRunning, setIsRunning] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
   const intervalRef = useRef(null);
+  const audioRef = useRef(null);
 
   useEffect(() => {
     if (isRunning && timeLeft > 0) {
       intervalRef.current = setInterval(() => {
         setTimeLeft((prev) => prev - 1);
       }, 1000);
-    } else if (timeLeft === 0) {
+    } else if (timeLeft === 0 && isRunning) {
       clearInterval(intervalRef.current);
       setIsRunning(false);
+      // Play chime sound
+      if (audioRef.current) {
+        audioRef.current.play().catch(console.error);
+      }
+      // Show completion modal
+      setShowCompleteModal(true);
     }
     return () => clearInterval(intervalRef.current);
   }, [isRunning, timeLeft]);
@@ -22,6 +33,10 @@ function TimeboxTimer() {
   const handleStart = () => {
     setTimeLeft(duration * 60);
     setIsRunning(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowCompleteModal(false);
   };
 
   const formatTime = (seconds) => {
@@ -161,6 +176,61 @@ function TimeboxTimer() {
       <div style={{ textAlign: 'center', color: '#6b7280', fontSize: 15, marginTop: isRunning ? 8 : 0, minHeight: 24 }}>
         {isRunning ? 'Stay focused on your current task!' : ''}
       </div>
+
+      {/* Hidden audio element for chime sound */}
+      <audio ref={audioRef} preload="auto">
+        <source src={chimeSound} type="audio/wav" />
+      </audio>
+
+      {/* Completion Modal */}
+      <Modal
+        open={showCompleteModal}
+        onClose={handleCloseModal}
+        aria-labelledby="timebox-complete-modal"
+        aria-describedby="timebox-complete-message"
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 400,
+            bgcolor: 'background.paper',
+            borderRadius: 2,
+            boxShadow: 24,
+            p: 4,
+            textAlign: 'center',
+            outline: 'none',
+          }}
+        >
+          <CheckCircle 
+            sx={{ 
+              fontSize: 64, 
+              color: '#4caf50', 
+              mb: 2 
+            }} 
+          />
+          <Typography id="timebox-complete-modal" variant="h5" component="h2" gutterBottom>
+            Timebox Complete!
+          </Typography>
+          <Typography id="timebox-complete-message" sx={{ mb: 3, color: '#6b7280' }}>
+            Great job! You've completed your {duration}-minute timebox for "{task}".
+          </Typography>
+          <Button
+            variant="contained"
+            onClick={handleCloseModal}
+            sx={{
+              bgcolor: '#111827',
+              '&:hover': {
+                bgcolor: '#374151',
+              },
+            }}
+          >
+            Continue
+          </Button>
+        </Box>
+      </Modal>
     </div>
   );
 }
